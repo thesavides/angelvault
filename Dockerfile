@@ -1,3 +1,4 @@
+cat > ~/Documents/angelvault-v2/Dockerfile << 'EOF'
 # Build stage
 FROM golang:1.22-alpine AS builder
 
@@ -30,9 +31,6 @@ COPY --from=builder /app/server .
 # Copy web assets
 COPY --from=builder /app/web ./web
 
-# Copy migrations
-COPY --from=builder /app/migrations ./migrations
-
 # Create non-root user
 RUN adduser -D -g '' appuser
 USER appuser
@@ -46,3 +44,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 
 # Run the binary
 CMD ["./server"]
+EOF
