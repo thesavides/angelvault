@@ -65,7 +65,7 @@ func (h *NDAHandler) SignMasterNDA(c *gin.Context) {
 func (h *NDAHandler) GetProjectNDAStatus(c *gin.Context) {
 	userID, _ := middleware.GetUserID(c)
 
-	projectID, err := uuid.Parse(c.Param("projectId"))
+	projectID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
 		return
@@ -79,7 +79,7 @@ func (h *NDAHandler) GetProjectNDAStatus(c *gin.Context) {
 func (h *NDAHandler) GetProjectAddendumContent(c *gin.Context) {
 	userID, _ := middleware.GetUserID(c)
 
-	projectID, err := uuid.Parse(c.Param("projectId"))
+	projectID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
 		return
@@ -98,7 +98,7 @@ func (h *NDAHandler) GetProjectAddendumContent(c *gin.Context) {
 func (h *NDAHandler) SignProjectAddendum(c *gin.Context) {
 	userID, _ := middleware.GetUserID(c)
 
-	projectID, err := uuid.Parse(c.Param("projectId"))
+	projectID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
 		return
@@ -143,7 +143,7 @@ func (h *NDAHandler) GetInvestorNDAs(c *gin.Context) {
 
 // UpdateProjectNDAConfig updates the NDA config for a developer's project
 func (h *NDAHandler) UpdateProjectNDAConfig(c *gin.Context) {
-	projectID, err := uuid.Parse(c.Param("projectId"))
+	projectID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
 		return
@@ -172,7 +172,7 @@ func (h *NDAHandler) UpdateProjectNDAConfig(c *gin.Context) {
 
 // GetProjectNDASignatures returns all signatures for a project (for developers)
 func (h *NDAHandler) GetProjectNDASignatures(c *gin.Context) {
-	projectID, err := uuid.Parse(c.Param("projectId"))
+	projectID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
 		return
