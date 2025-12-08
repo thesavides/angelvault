@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/postgres"
+	migratepostgres "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog/log"
@@ -71,7 +71,7 @@ func RunMigrations(cfg *config.Config, migrationsPath string) error {
 	}
 	defer sqlDB.Close()
 
-	driver, err := postgres.WithInstance(sqlDB, &postgres.Config{})
+	driver, err := migratepostgres.WithInstance(sqlDB, &postgres.Config{})
 	if err != nil {
 		return fmt.Errorf("failed to create migration driver: %w", err)
 	}
