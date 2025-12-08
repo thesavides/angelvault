@@ -71,7 +71,7 @@ func RunMigrations(cfg *config.Config, migrationsPath string) error {
 	}
 	defer sqlDB.Close()
 
-	driver, err := migratepostgres.WithInstance(sqlDB, &postgres.Config{})
+	migratepostgres.WithInstancedriver, err := migratepostgres.WithInstance(sqlDB, &migratepostgres.Config{})
 	if err != nil {
 		return fmt.Errorf("failed to create migration driver: %w", err)
 	}
