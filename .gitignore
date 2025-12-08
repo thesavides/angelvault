@@ -1,0 +1,49 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+angelvault-v2
+
+# Test binary
+*.test
+
+# Output of go coverage tool
+*.out
+
+# Go workspace file
+go.work
+
+# Environment files (NEVER commit these)
+.env
+.env.local
+.env.production
+.env*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Local development
+tmp/
+temp/
+
+# Credentials (NEVER commit)
+*.pem
+*.key
+credentials.json
+service-account.json
