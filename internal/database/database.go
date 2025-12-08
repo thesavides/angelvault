@@ -71,7 +71,7 @@ func RunMigrations(cfg *config.Config, migrationsPath string) error {
 	}
 	defer sqlDB.Close()
 
-	migratepostgres.WithInstancedriver, err := migratepostgres.WithInstance(sqlDB, &migratepostgres.Config{})
+	driver, err := migratepostgres.WithInstance(sqlDB, &migratepostgres.Config{})
 	if err != nil {
 		return fmt.Errorf("failed to create migration driver: %w", err)
 	}
@@ -84,42 +84,3 @@ func RunMigrations(cfg *config.Config, migrationsPath string) error {
 	if err != nil {
 		return fmt.Errorf("failed to create migration instance: %w", err)
 	}
-
-	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-		return fmt.Errorf("failed to run migrations: %w", err)
-	}
-
-	version, dirty, _ := m.Version()
-	log.Info().
-		Uint("version", version).
-		Bool("dirty", dirty).
-		Msg("Migrations completed")
-
-	return nil
-}
-
-// Close closes the database connection
-func Close() error {
-	if db != nil {
-		sqlDB, err := db.DB()
-		if err != nil {
-			return err
-		}
-		return sqlDB.Close()
-	}
-	return nil
-}
-
-// HealthCheck verifies the database is accessible
-func HealthCheck() error {
-	if db == nil {
-		return fmt.Errorf("database not initialized")
-	}
-
-	sqlDB, err := db.DB()
-	if err != nil {
-		return err
-	}
-
-	return sqlDB.Ping()
-}
