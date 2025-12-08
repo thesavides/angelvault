@@ -205,9 +205,9 @@ func (r *Router) setupProtectedRoutes(api *gin.RouterGroup) {
 		developer.PUT("/projects/:id/team/:memberId", r.projectHandler.UpdateTeamMember)
 		developer.DELETE("/projects/:id/team/:memberId", r.projectHandler.DeleteTeamMember)
 
-		// NDA config for projects
-		developer.PUT("/projects/:projectId/nda-config", r.ndaHandler.UpdateProjectNDAConfig)
-		developer.GET("/projects/:projectId/nda-signatures", r.ndaHandler.GetProjectNDASignatures)
+		// NDA config for projects (changed :projectId to :id)
+		developer.PUT("/projects/:id/nda-config", r.ndaHandler.UpdateProjectNDAConfig)
+		developer.GET("/projects/:id/nda-signatures", r.ndaHandler.GetProjectNDASignatures)
 		
 		// Project readiness (business stage, legal entity, etc.)
 		developer.GET("/projects/:id/readiness", r.readinessHandler.GetProjectReadiness)
@@ -245,10 +245,10 @@ func (r *Router) setupProtectedRoutes(api *gin.RouterGroup) {
 		investor.POST("/nda/sign", r.ndaHandler.SignMasterNDA)
 		investor.GET("/nda/list", r.ndaHandler.GetInvestorNDAs)
 
-		// Project NDA
-		investor.GET("/nda/project/:projectId/status", r.ndaHandler.GetProjectNDAStatus)
-		investor.GET("/nda/project/:projectId/content", r.ndaHandler.GetProjectAddendumContent)
-		investor.POST("/nda/project/:projectId/sign", r.ndaHandler.SignProjectAddendum)
+		// Project NDA (changed :projectId to :id)
+		investor.GET("/nda/project/:id/status", r.ndaHandler.GetProjectNDAStatus)
+		investor.GET("/nda/project/:id/content", r.ndaHandler.GetProjectAddendumContent)
+		investor.POST("/nda/project/:id/sign", r.ndaHandler.SignProjectAddendum)
 
 		// Unlock project
 		investor.POST("/projects/:id/unlock", r.projectHandler.UnlockProject)
