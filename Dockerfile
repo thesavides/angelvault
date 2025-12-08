@@ -1,4 +1,3 @@
-cat > ~/Documents/angelvault-v2/Dockerfile << 'EOF'
 # Build stage
 FROM golang:1.22-alpine AS builder
 
@@ -44,4 +43,3 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 
 # Run the binary
 CMD ["./server"]
-EOF
