@@ -34,15 +34,15 @@ export function AdminDashboard() {
   const loadDashboard = async () => {
     try {
       const [statsRes, pendingRes, activityRes, usersRes] = await Promise.all([
-        api.getAdminStats().catch(() => null),
-        api.getPendingProjects().catch(() => ({ projects: [] })),
-        api.getRecentActivity().catch(() => ({ activity: [] })),
-        api.listUsers({ per_page: 5 }).catch(() => ({ data: [] })),
+        api.getAdminStats(),
+        api.getPendingProjects(),
+        api.getRecentActivity(),
+        api.listUsers({ per_page: 5 }),
       ]);
       setStats(statsRes);
-      setPendingProjects(pendingRes?.projects || []);
-      setRecentActivity(activityRes?.activity || []);
-      setRecentUsers(usersRes?.data || usersRes?.users || []);
+      setPendingProjects(pendingRes.projects);
+      setRecentActivity(activityRes.activity);
+      setRecentUsers(usersRes.data);
     } catch (error) {
       console.error('Failed to load admin dashboard:', error);
     } finally {
