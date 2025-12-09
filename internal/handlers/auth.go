@@ -187,6 +187,19 @@ func (h *AuthHandler) UpdateInvestorProfile(c *gin.Context) {
 	})
 }
 
+// GetInvestorProfile retrieves investor-specific profile details
+func (h *AuthHandler) GetInvestorProfile(c *gin.Context) {
+	userID, _ := middleware.GetUserID(c)
+
+	profile, err := h.authService.GetInvestorProfile(userID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Investor profile not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, profile)
+}
+
 // ChangePassword changes user's password
 func (h *AuthHandler) ChangePassword(c *gin.Context) {
 	userID, _ := middleware.GetUserID(c)

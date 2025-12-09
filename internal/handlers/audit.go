@@ -224,3 +224,24 @@ func (h *AuditHandler) GetInvestorViewedProjects(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"views": views})
 }
+
+// ========================================
+// DEVELOPER DASHBOARD ENDPOINTS
+// ========================================
+
+// GetDeveloperDashboard returns dashboard stats for the authenticated developer
+func (h *AuditHandler) GetDeveloperDashboard(c *gin.Context) {
+	userID, exists := middleware.GetUserID(c)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Not authenticated"})
+		return
+	}
+
+	stats, err := h.auditService.GetDeveloperDashboardStats(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get dashboard stats"})
+		return
+	}
+
+	c.JSON(http.StatusOK, stats)
+}

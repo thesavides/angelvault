@@ -195,6 +195,9 @@ func (r *Router) setupProtectedRoutes(api *gin.RouterGroup) {
 	developer := protected.Group("/developer")
 	developer.Use(middleware.RequireRole(models.RoleDeveloper, models.RoleAdmin))
 	{
+		// Dashboard
+		developer.GET("/dashboard", r.auditHandler.GetDeveloperDashboard)
+		
 		developer.GET("/projects", r.projectHandler.GetDeveloperProjects)
 		developer.POST("/projects", r.projectHandler.CreateProject)
 		developer.PUT("/projects/:id", r.projectHandler.UpdateProject)
@@ -230,6 +233,7 @@ func (r *Router) setupProtectedRoutes(api *gin.RouterGroup) {
 		investor.GET("/dashboard", r.auditHandler.GetInvestorDashboard)
 		
 		// Profile
+		investor.GET("/profile", r.authHandler.GetInvestorProfile)
 		investor.PUT("/profile", r.authHandler.UpdateInvestorProfile)
 		
 		// Payments

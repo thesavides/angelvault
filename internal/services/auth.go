@@ -262,6 +262,18 @@ func (s *AuthService) UpdateProfile(userID uuid.UUID, firstName, lastName, compa
 	return &user, nil
 }
 
+// GetInvestorProfile retrieves investor-specific profile information
+func (s *AuthService) GetInvestorProfile(userID uuid.UUID) (*models.InvestorProfile, error) {
+	db := database.GetDB()
+	
+	var profile models.InvestorProfile
+	if err := db.Where("user_id = ?", userID).First(&profile).Error; err != nil {
+		return nil, errors.New("investor profile not found")
+	}
+	
+	return &profile, nil
+}
+
 // UpdateInvestorProfile updates investor-specific profile information
 func (s *AuthService) UpdateInvestorProfile(userID uuid.UUID, profile *models.InvestorProfile) (*models.InvestorProfile, error) {
 	db := database.GetDB()

@@ -442,6 +442,71 @@ func (s *AuditService) GetDashboardStats() (*models.DashboardStats, error) {
 	return stats, nil
 }
 
+// GetDeveloperDashboardStats retrieves stats for a developer's dashboard
+func (s *AuditService) GetDeveloperDashboardStats(developerID uuid.UUID) (map[string]interface{}, error) {
+	db := database.GetDB()
+
+	// Get developer's projects
+	var projects []models.Project
+	db.Where("developer_id = ?", developerID).
+		Preload("Category").
+		Order("created_at DESC").
+		Find(&projects)
+
+	// Calculate total views across all projects
+	var totalViews int64
+	for _, p := range projects {
+		totalViews += int64(p.ViewCount)
+	}
+
+	// Count meetings
+	var totalMeetings int64
+	var pendingMeetings int64
+	var completedMeetings int64
+	db.Model(&models.MeetingRequest{}).Where("developer_id = ?", developerID).Count(&totalMeetings)
+	db.Model(&models.MeetingRequest{}).Where("developer_id = ? AND status = ?", developerID, "pending").Count(&pendingMeetings)
+	db.Model(&models.MeetingRequest{}).Where("developer_id = ? AND status = ?", developerID, "completed").Count(&completedMeetings)
+
+	// Count NDA signatures for developer's projects
+	var ndaSignatures int64
+	projectIDs := make([]uuid.UUID, len(projects))
+	for i, p := range projects {
+		projectIDs[i] = p.ID
+	}
+	if len(projectIDs) > 0 {
+		db.Model(&models.ProjectNDASignature{}).Where("project_id IN ?", projectIDs).Count(&ndaSignatures)
+	}
+
+	// Get recent activity for this developer
+	var recentActivity []models.AuditLog
+	db.Where("user_id = ?", developerID).
+		Order("created_at DESC").
+		Limit(10).
+		Find(&recentActivity)
+
+	// Get recent views on developer's projects
+	var recentViews []models.ProjectViewLog
+	if len(projectIDs) > 0 {
+		db.Where("project_id IN ?", projectIDs).
+			Preload("Investor").
+			Preload("Project").
+			Order("viewed_at DESC").
+			Limit(10).
+			Find(&recentViews)
+	}
+
+	return map[string]interface{}{
+		"projects":           projects,
+		"total_views":        totalViews,
+		"total_meetings":     totalMeetings,
+		"pending_meetings":   pendingMeetings,
+		"completed_meetings": completedMeetings,
+		"nda_signatures":     ndaSignatures,
+		"recent_activity":    recentActivity,
+		"recent_views":       recentViews,
+	}, nil
+}
+
 // GetInvestorDashboardStats retrieves stats for an investor's dashboard
 func (s *AuditService) GetInvestorDashboardStats(investorID uuid.UUID) (*models.InvestorDashboardStats, error) {
 	db := database.GetDB()
