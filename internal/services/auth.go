@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -50,15 +51,18 @@ type AuthResponse struct {
 func (s *AuthService) Register(req *RegisterRequest) (*AuthResponse, error) {
 	db := database.GetDB()
 
-	// Check if email already exists
+	// Normalize email to lowercase
+	normalizedEmail := strings.ToLower(strings.TrimSpace(req.Email))
+
+	// Check if email already exists (case-insensitive)
 	var existing models.User
-	if err := db.Where("email = ?", req.Email).First(&existing).Error; err == nil {
+	if err := db.Where("LOWER(email) = ?", normalizedEmail).First(&existing).Error; err == nil {
 		return nil, errors.New("email already registered")
 	}
 
-	// Create user
+	// Create user with normalized email
 	user := &models.User{
-		Email:        req.Email,
+		Email:        normalizedEmail,
 		FirstName:    req.FirstName,
 		LastName:     req.LastName,
 		CompanyName:  req.CompanyName,
@@ -103,8 +107,11 @@ func (s *AuthService) Register(req *RegisterRequest) (*AuthResponse, error) {
 func (s *AuthService) Login(req *LoginRequest) (*AuthResponse, error) {
 	db := database.GetDB()
 
+	// Normalize email to lowercase for case-insensitive lookup
+	normalizedEmail := strings.ToLower(strings.TrimSpace(req.Email))
+
 	var user models.User
-	if err := db.Where("email = ?", req.Email).First(&user).Error; err != nil {
+	if err := db.Where("LOWER(email) = ?", normalizedEmail).First(&user).Error; err != nil {
 		return nil, errors.New("invalid email or password")
 	}
 
@@ -141,19 +148,22 @@ func (s *AuthService) Login(req *LoginRequest) (*AuthResponse, error) {
 func (s *AuthService) LoginWithOAuth(info *OAuthUserInfo, role models.UserRole) (*AuthResponse, error) {
 	db := database.GetDB()
 
+	// Normalize email to lowercase
+	normalizedEmail := strings.ToLower(strings.TrimSpace(info.Email))
+
 	var user models.User
 
 	// Try to find existing user by OAuth ID
 	err := db.Where("oauth_id = ? AND auth_provider = ?", info.ID, info.Provider).First(&user).Error
 	
 	if err != nil {
-		// Try to find by email
-		err = db.Where("email = ?", info.Email).First(&user).Error
+		// Try to find by email (case-insensitive)
+		err = db.Where("LOWER(email) = ?", normalizedEmail).First(&user).Error
 		
 		if err != nil {
-			// Create new user
+			// Create new user with normalized email
 			user = models.User{
-				Email:           info.Email,
+				Email:           normalizedEmail,
 				FirstName:       info.FirstName,
 				LastName:        info.LastName,
 				AuthProvider:    info.Provider,
@@ -362,8 +372,11 @@ func (s *AuthService) ChangePassword(userID uuid.UUID, currentPassword, newPassw
 func (s *AuthService) RequestPasswordReset(email string) (string, error) {
 	db := database.GetDB()
 	
+	// Normalize email for case-insensitive lookup
+	normalizedEmail := strings.ToLower(strings.TrimSpace(email))
+	
 	var user models.User
-	if err := db.Where("email = ?", email).First(&user).Error; err != nil {
+	if err := db.Where("LOWER(email) = ?", normalizedEmail).First(&user).Error; err != nil {
 		// Don't reveal if email exists
 		return "", nil
 	}
