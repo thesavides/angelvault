@@ -35,10 +35,12 @@ export function AdminProjectsPage() {
         per_page: perPage,
         status: statusFilter || undefined,
       });
-      setProjects(response.data);
-      setTotalProjects(response.total);
+      setProjects(response.data || []);
+      setTotalProjects(response.total || 0);
     } catch (error) {
       console.error('Failed to load projects:', error);
+      setProjects([]);
+      setTotalProjects(0);
     } finally {
       setIsLoading(false);
     }

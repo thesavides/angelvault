@@ -37,13 +37,15 @@ export function ProjectsPage() {
         api.listProjects({
           category: selectedCategory || undefined,
           stage: selectedStage || undefined,
-        }),
-        api.getCategories(),
+        }).catch(() => ({ data: [], total: 0 })),
+        api.getCategories().catch(() => []),
       ]);
-      setProjects(projectsRes.data);
-      setCategories(categoriesRes);
+      setProjects(projectsRes.data || []);
+      setCategories(categoriesRes || []);
     } catch (error) {
       console.error('Failed to load projects:', error);
+      setProjects([]);
+      setCategories([]);
     } finally {
       setIsLoading(false);
     }

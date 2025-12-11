@@ -37,10 +37,12 @@ export function AdminUsersPage() {
         role: roleFilter || undefined,
         search: searchQuery || undefined,
       });
-      setUsers(response.data);
-      setTotalUsers(response.total);
+      setUsers(response.data || []);
+      setTotalUsers(response.total || 0);
     } catch (error) {
       console.error('Failed to load users:', error);
+      setUsers([]);
+      setTotalUsers(0);
     } finally {
       setIsLoading(false);
     }

@@ -13,7 +13,7 @@ const variantStyles = {
   success: 'bg-green-100 text-green-700',
   warning: 'bg-amber-100 text-amber-700',
   error: 'bg-red-100 text-red-700',
-  gold: 'bg-yellow-100 text-yellow-800',
+  gold: 'bg-gold/20 text-gold-dark',
 };
 
 const sizeStyles = {
@@ -22,10 +22,20 @@ const sizeStyles = {
   lg: 'px-4 py-1.5 text-base',
 };
 
-export function Badge({ children, variant = 'primary', size = 'md', className = '' }: BadgeProps) {
+export function Badge({
+  children,
+  variant = 'primary',
+  size = 'md',
+  className = '',
+}: BadgeProps) {
   return (
     <span
-      className={`inline-flex items-center rounded-full font-medium ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
+      className={`
+        inline-flex items-center rounded-full font-medium
+        ${variantStyles[variant]}
+        ${sizeStyles[size]}
+        ${className}
+      `}
     >
       {children}
     </span>

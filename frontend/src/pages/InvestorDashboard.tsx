@@ -47,15 +47,22 @@ export function InvestorDashboard() {
   const loadDashboard = async () => {
     try {
       const [dashboardRes, ndaRes] = await Promise.all([
-        api.getInvestorDashboard(),
-        api.getMasterNDAStatus(),
+        api.getInvestorDashboard().catch(() => ({
+          views_remaining: 0,
+          projects_viewed: 0,
+          ndas_signed: 0,
+          meetings_requested: 0,
+          meetings_completed: 0,
+          recent_views: [],
+        })),
+        api.getMasterNDAStatus().catch(() => ({ has_signed: false, is_valid: false, needs_renewal: false })),
       ]);
       setStats({
-        views_remaining: dashboardRes.views_remaining,
-        projects_viewed: dashboardRes.projects_viewed,
-        ndas_signed: dashboardRes.ndas_signed,
-        meetings_requested: dashboardRes.meetings_requested,
-        meetings_completed: dashboardRes.meetings_completed,
+        views_remaining: dashboardRes.views_remaining || 0,
+        projects_viewed: dashboardRes.projects_viewed || 0,
+        ndas_signed: dashboardRes.ndas_signed || 0,
+        meetings_requested: dashboardRes.meetings_requested || 0,
+        meetings_completed: dashboardRes.meetings_completed || 0,
       });
       // Map ProjectUnlock to RecentView format
       const mappedViews = (dashboardRes.recent_views || []).map((unlock: any) => ({

@@ -51,16 +51,70 @@ export function Card({
   );
 }
 
-export function CardHeader({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return <div className={`mb-4 ${className}`}>{children}</div>;
+interface CardHeaderProps {
+  children: React.ReactNode;
+  className?: string;
 }
 
-export function CardTitle({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return <h3 className={`font-display font-semibold text-xl ${className}`}>{children}</h3>;
+export function CardHeader({ children, className = '' }: CardHeaderProps) {
+  return (
+    <div className={`mb-4 ${className}`}>
+      {children}
+    </div>
+  );
 }
 
-export function CardContent({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return <div className={className}>{children}</div>;
+interface CardTitleProps {
+  children: React.ReactNode;
+  className?: string;
+  as?: 'h1' | 'h2' | 'h3' | 'h4';
+}
+
+export function CardTitle({ children, className = '', as: Component = 'h3' }: CardTitleProps) {
+  return (
+    <Component className={`font-display font-semibold text-xl ${className}`}>
+      {children}
+    </Component>
+  );
+}
+
+interface CardDescriptionProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export function CardDescription({ children, className = '' }: CardDescriptionProps) {
+  return (
+    <p className={`text-gray-600 mt-1 ${className}`}>
+      {children}
+    </p>
+  );
+}
+
+interface CardContentProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export function CardContent({ children, className = '' }: CardContentProps) {
+  return (
+    <div className={className}>
+      {children}
+    </div>
+  );
+}
+
+interface CardFooterProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export function CardFooter({ children, className = '' }: CardFooterProps) {
+  return (
+    <div className={`mt-4 pt-4 border-t border-gray-100 ${className}`}>
+      {children}
+    </div>
+  );
 }
 
 export default Card;

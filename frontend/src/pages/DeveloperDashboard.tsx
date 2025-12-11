@@ -27,11 +27,11 @@ export function DeveloperDashboard() {
   const loadDashboard = async () => {
     try {
       const [projectsRes, meetingsRes] = await Promise.all([
-        api.getDeveloperProjects(),
-        api.getDeveloperMeetings(),
+        api.getDeveloperProjects().catch(() => []),
+        api.getDeveloperMeetings().catch(() => ({ meetings: [] })),
       ]);
-      setProjects(projectsRes);
-      setMeetings(meetingsRes.meetings);
+      setProjects(projectsRes || []);
+      setMeetings(meetingsRes?.meetings || []);
     } catch (error) {
       console.error('Failed to load dashboard:', error);
     } finally {

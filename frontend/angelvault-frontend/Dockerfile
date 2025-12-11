@@ -5,22 +5,26 @@ WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
-RUN npm ci
 
-# Copy source and build
+# Install dependencies
+RUN npm install
+
+# Copy source code
 COPY . .
+
+# Build the application
 RUN npm run build
 
-# Production stage with Nginx
+# Production stage - using nginx to serve static files
 FROM nginx:alpine
 
 # Copy custom nginx config
-COPY nginx.conf /etc/nginx/nginx.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Copy built files
+# Copy built files from builder stage
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Expose port (Cloud Run uses 8080)
+# Expose port 8080 (Cloud Run default)
 EXPOSE 8080
 
 # Start nginx

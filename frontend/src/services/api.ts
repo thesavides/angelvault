@@ -123,13 +123,19 @@ class ApiService {
   // ============================================
 
   async getPublicStats(): Promise<{ projects: number; investors: number; funded: number; capital_deployed: number }> {
-    const response = await this.client.get('/api/public/stats');
-    return response.data;
+    const response = await this.client.get<any>('/api/public/stats');
+    const data = response.data;
+    return {
+      projects: data.projects || data.total_projects || 0,
+      investors: data.investors || data.total_investors || 0,
+      funded: data.funded || data.funded_projects || 0,
+      capital_deployed: data.capital_deployed || data.total_capital || 0,
+    };
   }
 
   async getCategories(): Promise<Category[]> {
-    const response = await this.client.get<{ categories: Category[] }>('/api/public/categories');
-    return response.data.categories;
+    const response = await this.client.get<any>('/api/public/categories');
+    return response.data.categories || response.data || [];
   }
 
   async getCategory(slug: string): Promise<Category> {
@@ -142,8 +148,18 @@ class ApiService {
   // ============================================
 
   async listProjects(filters?: ProjectFilters): Promise<PaginatedResponse<Project>> {
-    const response = await this.client.get<PaginatedResponse<Project>>('/api/projects', { params: filters });
-    return response.data;
+    const response = await this.client.get<any>('/api/projects', { params: filters });
+    const data = response.data;
+    // Backend returns { projects, total, page, pageSize }
+    return {
+      data: data.projects || data.data || [],
+      total: data.total || 0,
+      page: data.page || 1,
+      per_page: data.pageSize || data.page_size || data.per_page || 20,
+      total_pages: Math.ceil((data.total || 0) / (data.pageSize || data.page_size || data.per_page || 20)),
+      has_next: (data.page || 1) < Math.ceil((data.total || 0) / (data.pageSize || data.page_size || data.per_page || 20)),
+      has_prev: (data.page || 1) > 1,
+    };
   }
 
   async getProject(id: string): Promise<Project> {
@@ -161,13 +177,22 @@ class ApiService {
   // ============================================
 
   async getDeveloperDashboard(): Promise<DeveloperDashboard> {
-    const response = await this.client.get<DeveloperDashboard>('/api/developer/dashboard');
-    return response.data;
+    const response = await this.client.get<any>('/api/developer/dashboard');
+    const data = response.data;
+    return {
+      projects: data.projects || [],
+      total_views: data.total_views || 0,
+      total_meetings: data.total_meetings || 0,
+      pending_meetings: data.pending_meetings || 0,
+      completed_meetings: data.completed_meetings || 0,
+      nda_signatures: data.nda_signatures || 0,
+      recent_activity: data.recent_activity || [],
+    };
   }
 
   async getDeveloperProjects(): Promise<Project[]> {
-    const response = await this.client.get<{ projects: Project[] }>('/api/developer/projects');
-    return response.data.projects;
+    const response = await this.client.get<any>('/api/developer/projects');
+    return response.data.projects || response.data || [];
   }
 
   async createProject(data: ProjectFormData): Promise<Project> {
@@ -250,8 +275,8 @@ class ApiService {
 
   // Developer Meetings
   async getDeveloperMeetings(): Promise<{ meetings: MeetingRequest[] }> {
-    const response = await this.client.get('/api/developer/meetings');
-    return response.data;
+    const response = await this.client.get<any>('/api/developer/meetings');
+    return { meetings: response.data.meetings || response.data || [] };
   }
 
   async respondToMeeting(id: string, status: 'accepted' | 'declined', scheduledAt?: string, meetingLink?: string): Promise<void> {
@@ -267,8 +292,20 @@ class ApiService {
   // ============================================
 
   async getInvestorDashboard(): Promise<InvestorDashboard> {
-    const response = await this.client.get<InvestorDashboard>('/api/investor/dashboard');
-    return response.data;
+    const response = await this.client.get<any>('/api/investor/dashboard');
+    const data = response.data;
+    // Map backend InvestorDashboardStats to frontend InvestorDashboard format
+    return {
+      views_remaining: data.remaining_credits || data.views_remaining || 0,
+      total_views_purchased: data.total_credits || data.total_views_purchased || 0,
+      projects_viewed: data.projects_unlocked || data.projects_viewed || 0,
+      ndas_signed: data.ndas_signed || 0,
+      meetings_requested: data.meetings_requested || 0,
+      meetings_completed: data.meetings_completed || 0,
+      unread_messages: data.unread_messages || 0,
+      recent_views: data.recent_views || [],
+      pending_meetings: data.pending_meetings || [],
+    };
   }
 
   async updateInvestorProfile(data: Partial<InvestorProfile>): Promise<InvestorProfile> {
@@ -297,13 +334,13 @@ class ApiService {
   }
 
   async getPaymentHistory(): Promise<{ payments: Payment[] }> {
-    const response = await this.client.get('/api/investor/payments/history');
-    return response.data;
+    const response = await this.client.get<any>('/api/investor/payments/history');
+    return { payments: response.data.payments || [] };
   }
 
   async getViewedProjects(): Promise<{ unlocks: ProjectUnlock[] }> {
-    const response = await this.client.get('/api/investor/payments/viewed');
-    return response.data;
+    const response = await this.client.get<any>('/api/investor/payments/viewed');
+    return { unlocks: response.data.unlocks || response.data.views || [] };
   }
 
   async unlockProject(projectId: string): Promise<{ success: boolean; views_remaining: number }> {
@@ -313,8 +350,16 @@ class ApiService {
 
   // NDA
   async getMasterNDAStatus(): Promise<MasterNDAStatus> {
-    const response = await this.client.get<MasterNDAStatus>('/api/investor/nda/status');
-    return response.data;
+    const response = await this.client.get<any>('/api/investor/nda/status');
+    const data = response.data;
+    return {
+      has_signed: data.has_signed || data.has_signed_master_nda || false,
+      has_signed_master_nda: data.has_signed_master_nda || data.has_signed || false,
+      signed_at: data.signed_at,
+      expires_at: data.expires_at,
+      is_valid: data.is_valid ?? true,
+      needs_renewal: data.needs_renewal || false,
+    };
   }
 
   async getMasterNDAContent(): Promise<{ content: string; version: string }> {
@@ -358,8 +403,8 @@ class ApiService {
   }
 
   async getInvestorMeetings(): Promise<{ meetings: MeetingRequest[] }> {
-    const response = await this.client.get('/api/investor/meetings');
-    return response.data;
+    const response = await this.client.get<any>('/api/investor/meetings');
+    return { meetings: response.data.meetings || response.data || [] };
   }
 
   async getMeeting(id: string): Promise<MeetingRequest> {
@@ -395,23 +440,51 @@ class ApiService {
   // ============================================
 
   async getAdminStats(): Promise<DashboardStats> {
-    const response = await this.client.get<DashboardStats>('/api/admin/stats');
-    return response.data;
+    const response = await this.client.get<any>('/api/admin/stats');
+    const data = response.data;
+    // Map backend response to DashboardStats interface
+    return {
+      total_users: data.total_users || 0,
+      total_investors: data.total_investors || 0,
+      total_developers: data.total_developers || 0,
+      total_projects: data.total_projects || 0,
+      live_projects: data.approved_projects || data.live_projects || 0,
+      pending_projects: data.pending_projects || 0,
+      funded_projects: data.funded_projects || 0,
+      total_revenue: (data.total_revenue || 0) / 100, // Convert cents to dollars
+      monthly_revenue: (data.revenue_this_month || 0) / 100,
+      total_investments: data.total_offers || 0,
+      monthly_investments: 0,
+      active_meetings: 0,
+      conversion_rate: 0,
+    };
   }
 
   async getRecentActivity(limit?: number): Promise<{ activity: AuditLog[] }> {
-    const response = await this.client.get('/api/admin/activity', { params: { limit } });
-    return response.data;
+    const response = await this.client.get<any>('/api/admin/activity', { params: { limit } });
+    // Backend returns { activities } not { activity }
+    return { activity: response.data.activities || response.data.activity || [] };
   }
 
   async getAuditLogs(params?: { page?: number; per_page?: number; user_id?: string; action?: string; entity_type?: string }): Promise<PaginatedResponse<AuditLog>> {
-    const response = await this.client.get<PaginatedResponse<AuditLog>>('/api/admin/audit', { params });
-    return response.data;
+    const response = await this.client.get<any>('/api/admin/audit', { params });
+    const data = response.data;
+    // Backend returns { logs, total, page, page_size }
+    return {
+      data: data.logs || data.data || [],
+      total: data.total || 0,
+      page: data.page || 1,
+      per_page: data.page_size || data.per_page || 50,
+      total_pages: Math.ceil((data.total || 0) / (data.page_size || data.per_page || 50)),
+      has_next: (data.page || 1) < Math.ceil((data.total || 0) / (data.page_size || data.per_page || 50)),
+      has_prev: (data.page || 1) > 1,
+    };
   }
 
   async getUserActivityHistory(userId: string): Promise<{ activity: AuditLog[] }> {
-    const response = await this.client.get(`/api/admin/audit/user/${userId}`);
-    return response.data;
+    const response = await this.client.get<any>(`/api/admin/audit/user/${userId}`);
+    // Backend returns { logs } not { activity }
+    return { activity: response.data.logs || response.data.activity || [] };
   }
 
   async getInvestorAccessHistory(investorId: string): Promise<{ accesses: Array<{ project: Project; viewed_at: string }> }> {
@@ -426,8 +499,19 @@ class ApiService {
 
   // Admin - Users
   async listUsers(filters?: UserFilters): Promise<PaginatedResponse<User>> {
-    const response = await this.client.get<PaginatedResponse<User>>('/api/admin/users', { params: filters });
-    return response.data;
+    const response = await this.client.get<any>('/api/admin/users', { params: filters });
+    // Backend returns { users, total, page, page_size }
+    // Transform to PaginatedResponse format
+    const data = response.data;
+    return {
+      data: data.users || data.data || [],
+      total: data.total || 0,
+      page: data.page || 1,
+      per_page: data.page_size || data.per_page || 20,
+      total_pages: Math.ceil((data.total || 0) / (data.page_size || data.per_page || 20)),
+      has_next: (data.page || 1) < Math.ceil((data.total || 0) / (data.page_size || data.per_page || 20)),
+      has_prev: (data.page || 1) > 1,
+    };
   }
 
   async getUser(id: string): Promise<User> {
@@ -480,13 +564,23 @@ class ApiService {
 
   // Admin - Projects
   async listAllProjects(filters?: ProjectFilters): Promise<PaginatedResponse<Project>> {
-    const response = await this.client.get<PaginatedResponse<Project>>('/api/admin/projects', { params: filters });
-    return response.data;
+    const response = await this.client.get<any>('/api/admin/projects', { params: filters });
+    // Backend returns { projects, total, page, page_size }
+    const data = response.data;
+    return {
+      data: data.projects || data.data || [],
+      total: data.total || 0,
+      page: data.page || 1,
+      per_page: data.page_size || data.per_page || 20,
+      total_pages: Math.ceil((data.total || 0) / (data.page_size || data.per_page || 20)),
+      has_next: (data.page || 1) < Math.ceil((data.total || 0) / (data.page_size || data.per_page || 20)),
+      has_prev: (data.page || 1) > 1,
+    };
   }
 
   async getPendingProjects(): Promise<{ projects: Project[] }> {
-    const response = await this.client.get('/api/admin/projects/pending');
-    return response.data;
+    const response = await this.client.get<any>('/api/admin/projects/pending');
+    return { projects: response.data.projects || [] };
   }
 
   async adminCreateProject(data: ProjectFormData & { developer_id: string }): Promise<Project> {
@@ -534,8 +628,8 @@ class ApiService {
 
   // Admin - Categories
   async adminListCategories(): Promise<{ categories: Category[] }> {
-    const response = await this.client.get('/api/admin/categories');
-    return response.data;
+    const response = await this.client.get<any>('/api/admin/categories');
+    return { categories: response.data.categories || response.data || [] };
   }
 
   async createCategory(data: { name: string; description?: string; icon?: string; color?: string }): Promise<Category> {
@@ -583,26 +677,26 @@ class ApiService {
 
   // Admin - SAFE Notes
   async adminListSAFENotes(params?: { page?: number; limit?: number; status?: string; project_id?: string }): Promise<{ safe_notes: SAFENote[]; total_pages: number }> {
-    const response = await this.client.get('/api/admin/safe-notes', { params });
-    return response.data;
+    const response = await this.client.get<any>('/api/admin/safe-notes', { params });
+    return { safe_notes: response.data.safe_notes || [], total_pages: response.data.total_pages || 1 };
   }
 
   // Admin - NDAs
   async adminListNDAs(params?: { project_id?: string }): Promise<{ ndas: any[] }> {
-    const response = await this.client.get('/api/admin/ndas', { params });
-    return response.data;
+    const response = await this.client.get<any>('/api/admin/ndas', { params });
+    return { ndas: response.data.ndas || [] };
   }
 
   // Admin - Payments
   async getAdminPayments(params?: { page?: number; limit?: number; status?: string }): Promise<{ payments: Payment[]; total_pages: number }> {
-    const response = await this.client.get('/api/admin/payments', { params });
-    return response.data;
+    const response = await this.client.get<any>('/api/admin/payments', { params });
+    return { payments: response.data.payments || [], total_pages: response.data.total_pages || 1 };
   }
 
   // Admin - Commissions
   async adminListCommissions(params?: { page?: number; limit?: number; status?: string }): Promise<{ commissions: any[]; total_pages: number }> {
-    const response = await this.client.get('/api/admin/commissions', { params });
-    return response.data;
+    const response = await this.client.get<any>('/api/admin/commissions', { params });
+    return { commissions: response.data.commissions || [], total_pages: response.data.total_pages || 1 };
   }
 
   async adminMarkCommissionPaid(commissionId: string): Promise<void> {
@@ -637,8 +731,8 @@ class ApiService {
   // ============================================
 
   async getNotifications(unreadOnly?: boolean): Promise<{ notifications: Notification[] }> {
-    const response = await this.client.get('/api/notifications', { params: { unread_only: unreadOnly } });
-    return response.data;
+    const response = await this.client.get<any>('/api/notifications', { params: { unread_only: unreadOnly } });
+    return { notifications: response.data.notifications || [] };
   }
 
   async markNotificationAsRead(id: string): Promise<void> {
@@ -654,13 +748,13 @@ class ApiService {
   // ============================================
 
   async getInvestorSAFENotes(params?: { status?: string; page?: number; limit?: number }): Promise<{ safe_notes: SAFENote[]; total_pages: number }> {
-    const response = await this.client.get('/api/investor/safe-notes', { params });
-    return response.data;
+    const response = await this.client.get<any>('/api/investor/safe-notes', { params });
+    return { safe_notes: response.data.safe_notes || [], total_pages: response.data.total_pages || 1 };
   }
 
   async getDeveloperSAFENotes(params?: { status?: string; page?: number; limit?: number }): Promise<{ safe_notes: SAFENote[]; total_pages: number }> {
-    const response = await this.client.get('/api/developer/safe-notes', { params });
-    return response.data;
+    const response = await this.client.get<any>('/api/developer/safe-notes', { params });
+    return { safe_notes: response.data.safe_notes || [], total_pages: response.data.total_pages || 1 };
   }
 
   async getSAFENote(id: string): Promise<SAFENote> {

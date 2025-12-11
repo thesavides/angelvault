@@ -1,0 +1,49 @@
+steps:
+  # Build the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'europe-west4-docker.pkg.dev/$PROJECT_ID/angelvault/angelvault-web:$COMMIT_SHA'
+      - '-t'
+      - 'europe-west4-docker.pkg.dev/$PROJECT_ID/angelvault/angelvault-web:latest'
+      - '.'
+
+  # Push the image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - '--all-tags'
+      - 'europe-west4-docker.pkg.dev/$PROJECT_ID/angelvault/angelvault-web'
+
+  # Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'angelvault-web'
+      - '--image'
+      - 'europe-west4-docker.pkg.dev/$PROJECT_ID/angelvault/angelvault-web:$COMMIT_SHA'
+      - '--region'
+      - 'europe-west4'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--port'
+      - '8080'
+      - '--memory'
+      - '256Mi'
+      - '--cpu'
+      - '1'
+      - '--min-instances'
+      - '0'
+      - '--max-instances'
+      - '10'
+
+images:
+  - 'europe-west4-docker.pkg.dev/$PROJECT_ID/angelvault/angelvault-web:$COMMIT_SHA'
+  - 'europe-west4-docker.pkg.dev/$PROJECT_ID/angelvault/angelvault-web:latest'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
